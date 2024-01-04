@@ -42,4 +42,14 @@ export async function transactionsRoutes(app: FastifyInstance) {
 
     return { transaction }
   })
+
+  app.get('/transactions/summary', async () => {
+    const summary = await knex('transactions')
+      .sum('amount', {
+        as: 'amount',
+      })
+      .first()
+
+    return { summary }
+  })
 }
