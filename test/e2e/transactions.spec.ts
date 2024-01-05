@@ -52,4 +52,67 @@ describe('E2E - [routes] : transactions', () => {
       }),
     ])
   })
+
+  it('should be able to get a specific transaction', async () => {
+    const transaction = {
+      title: 'New transaction',
+      amount: 5000,
+      type: 'credit',
+    }
+
+    const createTransactionResponse = await supertest(app.server)
+      .post('/transactions')
+      .send(transaction)
+
+    const cookies = createTransactionResponse.get('Set-Cookie')
+
+    const listTransactionsResponse = await supertest(app.server)
+      .get('/transactions')
+      .set('Cookie', cookies)
+
+    const transactionId = listTransactionsResponse.body.transactions[0].id
+
+    const getOneTransactionResponse = await supertest(app.server)
+      .get(`/transactions/${transactionId}`)
+      .set('Cookie', cookies)
+
+    expect(listTransactionsResponse.statusCode).toEqual(200)
+    expect(getOneTransactionResponse.body.transaction).toEqual(
+      listTransactionsResponse.body.transactions[0],
+    )
+  })
+
+  it('should be able to get the summary', async () => {
+    const creditTransaction = {
+      title: 'Credit transaction',
+      amount: 5000,
+      type: 'credit',
+    }
+
+    const debitTransaction = {
+      title: 'Debit transaction',
+      amount: 2000,
+      type: 'debit',
+    }
+
+    const createTransactionResponse = await supertest(app.server)
+      .post('/transactions')
+      .send(creditTransaction)
+
+    const cookies = createTransactionResponse.get('Set-Cookie')
+
+    await supertest(app.server)
+      .post('/transactions')
+      .set('Cookie', cookies)
+      .send(debitTransaction)
+
+    const summaryTransactionsResponse = await supertest(app.server)
+      .get('/transactions/summary')
+      .set('Cookie', cookies)
+
+    expect(summaryTransactionsResponse.statusCode).toEqual(200)
+    expect(summaryTransactionsResponse.body.summary).toEqual({
+      amount: creditTransaction.amount - debitTransaction.amount,
+    })
+  })
 })
