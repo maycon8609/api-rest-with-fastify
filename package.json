@@ -7,7 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsup src --out-dir build",
+    "build": "tsup src --out-dir build --minify",
     "dev": "tsx watch src/server.ts",
     "knex": "node --no-warnings --import tsx ./node_modules/.bin/knex",
     "lint": "eslint src --ext .ts --fix",
